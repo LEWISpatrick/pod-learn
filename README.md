@@ -1,37 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PodLearn
+
+PodLearn is a Next.js application that uses AI to analyze podcasts, extract key information, and create personalized learning materials.
+
+## Prerequisites
+
+- Node.js (v14 or later)
+- npm or yarn
+- Git
+- A Neon database account
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+   ```
+   git clone https://github.com/your-username/pod-learn.git
+   cd pod-learn
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   ```
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   or
 
-## Learn More
+   ```
+   yarn install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Set up your Neon database:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   - Sign up for a Neon account at https://neon.tech
+   - Create a new project
+   - In your project dashboard, find your connection string
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Set up environment variables:
 
-## Deploy on Vercel
+   - Create a `.env` file in the root directory
+   - Add the following variables:
+     ```
+     DATABASE_URL="your-neon-connection-string"
+     NEXTAUTH_SECRET="your-nextauth-secret"
+     NEXTAUTH_URL="http://localhost:3000"
+     OPENAI_API_KEY="your-openai-api-key"
+     ELEVENLABS_API_KEY="your-elevenlabs-api-key"
+     ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Set up the database schema:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# pod-learn
+   ```
+   npx prisma db push
+   ```
+
+6. Run the development server:
+
+   ```
+   npm run dev
+   ```
+
+   or
+
+   ```
+   yarn dev
+   ```
+
+7. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Features
+
+- Create custom podcasts on any topic
+- Save and manage your podcasts
+- Interactive grid background
+- Authentication system
+
+## Technologies Used
+
+- Next.js
+- React
+- Prisma
+- NextAuth.js
+- OpenAI API
+- ElevenLabs API
+- Tailwind CSS
+- Material-UI
+
+## Project Structure
+
+- `app/`: Contains the main application code
+- `components/`: Reusable React components
+- `lib/`: Utility functions and configurations
+- `prisma/`: Database schema and migrations
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
