@@ -12,10 +12,10 @@ export async function GET(
   { params }: { params: { topic: string } }
 ) {
   // Check origin
-  // const origin = request.headers.get("origin");
-  // // if (origin !== process.env.ALLOWED_ORIGIN) {
-  // //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  // // }
+  const origin = request.headers.get("origin");
+  if (origin !== process.env.ALLOWED_ORIGIN) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Check if the user is authenticated
   const session = await getServerSession(authOptions);

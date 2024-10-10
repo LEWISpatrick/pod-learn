@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  // // Check origin
-  // const origin = request.headers.get("origin");
-  // if (origin !== process.env.ALLOWED_ORIGIN) {
-  //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  // }
+  // Check origin
+  const origin = request.headers.get("origin");
+  if (origin !== process.env.ALLOWED_ORIGIN) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { content } = await request.json();
   const voice_id = "21m00Tcm4TlvDq8ikWAM"; // this is the voice id for a female voice 🙂

@@ -5,10 +5,10 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   // Check origin
-  // const origin = req.headers.get("origin");
-  // if (origin !== process.env.ALLOWED_ORIGIN) {
-  //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  // }
+  const origin = req.headers.get("origin");
+  if (origin !== process.env.ALLOWED_ORIGIN) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
