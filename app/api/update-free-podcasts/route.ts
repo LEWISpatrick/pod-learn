@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  //   const origin = req.headers.get("origin");
+export async function POST(req: Request) {
+  const origin = req.headers.get("origin");
   if (origin !== process.env.ALLOWED_ORIGIN) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
