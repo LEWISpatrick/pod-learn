@@ -46,8 +46,6 @@ export async function GET(
       temperature: 0.7,
     });
 
-    console.log(completion.choices[0].message.content);
-
     return NextResponse.json({
       content: completion.choices[0].message.content,
     });
