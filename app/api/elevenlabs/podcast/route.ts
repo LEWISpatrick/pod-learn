@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   // Check origin
-  const origin = request.headers.get("origin");
-  if (origin !== process.env.ALLOWED_ORIGIN) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const { content } = await request.json();
   const voice_id = "21m00Tcm4TlvDq8ikWAM"; // this is the voice id for a female voice 🙂
@@ -48,21 +44,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-export async function OPTIONS(request: Request) {
-  const origin = request.headers.get("origin");
-
-  if (origin === process.env.ALLOWED_ORIGIN) {
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
-  }
-
-  return new NextResponse(null, { status: 403 });
 }

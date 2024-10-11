@@ -3,12 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
-  const origin = req.headers.get("origin");
-  if (origin !== process.env.ALLOWED_ORIGIN) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,21 +27,4 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
-
-export async function OPTIONS(req: Request) {
-  const origin = req.headers.get("origin");
-
-  if (origin === process.env.ALLOWED_ORIGIN) {
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
-  }
-
-  return new NextResponse(null, { status: 403 });
 }

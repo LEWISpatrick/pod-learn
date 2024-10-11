@@ -10,15 +10,9 @@ export async function GET(
   request: Request,
   { params }: { params: { topic: string } }
 ) {
-  // Check origin
-  const origin = request.headers.get("origin");
-  if (origin !== process.env.ALLOWED_ORIGIN) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   // Check if the user is authenticated
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -56,21 +50,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
-
-export async function OPTIONS(request: Request) {
-  const origin = request.headers.get("origin");
-
-  if (origin === process.env.ALLOWED_ORIGIN) {
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
-  }
-
-  return new NextResponse(null, { status: 403 });
 }
