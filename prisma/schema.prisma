@@ -16,6 +16,7 @@ model User {
   email          String          @unique
   name           String?
   image          String?
+  emailVerified  DateTime?
   freePodcasts   Int             @default(2)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @default(now()) @updatedAt
@@ -61,4 +62,3 @@ model SavedPodcast {
   duration  Int      @default(1) // Duration in minutes
   createdAt DateTime @default(now())
 }
-
