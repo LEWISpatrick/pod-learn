@@ -21,6 +21,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  secret: process.env.AUTH_SECRET,
   callbacks: {
     session({ session, user }) {
       if (session.user) {
