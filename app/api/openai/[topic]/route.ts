@@ -33,33 +33,46 @@ export async function GET(
 
   try {
     const completion = await client.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo", // Using a faster model to reduce timeout risk
       messages: [
         {
           role: "system",
-          content: `You are a helpful assistant that generates a ${duration}-minute ${tone} podcast monologue about the given topic. The speaker should explain the topic in a friendly, casual way, keeping it entertaining and appropriate for the specified tone.`,
+          content: `Generate a ${duration}-minute ${tone} podcast monologue about ${topic}. Be concise and entertaining.`,
         },
         {
           role: "user",
-          content: `Create a ${duration}-minute ${tone} podcast monologue about ${topic}. The speaker should explain the topic in a friendly, casual way, adapting the content and style to fit a ${tone} tone.`,
+          content: `Create a brief ${duration}-minute ${tone} podcast monologue about ${topic}.`,
         },
       ],
-      max_tokens: 1000,
+      max_tokens: 500, // Reduced token count for faster response
       temperature: 0.7,
       stream: true,
     });
 
+    let fullContent = "";
     for await (const chunk of completion) {
       const content = chunk.choices[0]?.delta?.content || "";
       if (content) {
+        fullContent += content;
         await writeToStream(content);
       }
     }
 
+    // If the stream ends prematurely, send the full content
+    if (fullContent.length < 100) {
+      await writeToStream(fullContent);
+    }
+
     writer.close();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("OpenAI API error:", error);
-    await writeToStream("Error: Failed to generate podcast content");
+    await writeToStream(
+      `Error: ${
+        error instanceof Error
+          ? error.message
+          : "Failed to generate podcast content"
+      }`
+    );
     writer.close();
   }
 
