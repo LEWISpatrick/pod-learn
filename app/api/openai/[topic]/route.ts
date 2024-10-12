@@ -1,10 +1,11 @@
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { CohereClient } from "cohere-ai";
 
-const client = new OpenAI({
-  apiKey: process.env["OPENAI_API_KEY"],
+// Initialize the Cohere client
+const cohere = new CohereClient({
+  token: process.env.COHERE_API_KEY || "",
 });
 
 export async function GET(
@@ -21,66 +22,27 @@ export async function GET(
   const tone = searchParams.get("tone") || "comedy";
   const duration = searchParams.get("duration") || "5";
 
-  const encoder = new TextEncoder();
-  const stream = new TransformStream();
-  const writer = stream.writable.getWriter();
-
-  const writeToStream = async (text: string) => {
-    await writer.write(
-      encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`)
-    );
-  };
-
   try {
-    const completion = await client.chat.completions.create({
-      model: "gpt-3.5-turbo", // Using a faster model to reduce timeout risk
-      messages: [
-        {
-          role: "system",
-          content: `Generate a ${duration}-minute ${tone} podcast monologue about ${topic}. Be concise and entertaining.`,
-        },
-        {
-          role: "user",
-          content: `Create a brief ${duration}-minute ${tone} podcast monologue about ${topic}.`,
-        },
-      ],
-      max_tokens: 500, // Reduced token count for faster response
+    const response = await cohere.generate({
+      model: "command",
+      prompt: `Create a ${duration}-minute ${tone} podcast monologue about ${topic}. Be concise and entertaining. and Only return the content, no other text.`,
+      maxTokens: 500,
       temperature: 0.7,
-      stream: true,
     });
 
-    let fullContent = "";
-    for await (const chunk of completion) {
-      const content = chunk.choices[0]?.delta?.content || "";
-      if (content) {
-        fullContent += content;
-        await writeToStream(content);
-      }
+    if (response.generations && response.generations.length > 0) {
+      return NextResponse.json({ content: response.generations[0].text });
+    } else {
+      return NextResponse.json(
+        { error: "No content generated" },
+        { status: 500 }
+      );
     }
-
-    // If the stream ends prematurely, send the full content
-    if (fullContent.length < 100) {
-      await writeToStream(fullContent);
-    }
-
-    writer.close();
-  } catch (error: unknown) {
-    console.error("OpenAI API error:", error);
-    await writeToStream(
-      `Error: ${
-        error instanceof Error
-          ? error.message
-          : "Failed to generate podcast content"
-      }`
+  } catch (error) {
+    console.error("Cohere API error:", error);
+    return NextResponse.json(
+      { error: "Failed to generate podcast content" },
+      { status: 500 }
     );
-    writer.close();
   }
-
-  return new NextResponse(stream.readable, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
 }
