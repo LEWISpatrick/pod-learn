@@ -34,6 +34,7 @@ const CreatePodcast = () => {
   const [router] = useState(useRouter());
   const { status } = useSession();
   const [saved, setSaved] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -66,15 +67,34 @@ const CreatePodcast = () => {
     }
     setIsLoading(true);
     setError("");
+    setGeneratedContent("");
+
     try {
-      // Generate podcast content
-      const contentResponse = await fetch(
+      // Generate podcast content using streaming
+      const response = await fetch(
         `/api/openai/${encodeURIComponent(topic)}?tone=${encodeURIComponent(
           selectedTone
         )}&duration=${selectedDuration}`
       );
-      const contentData = await contentResponse.json();
-      if (!contentResponse.ok) throw new Error(contentData.error);
+
+      if (!response.ok) throw new Error("Failed to generate content");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = new TextDecoder().decode(value);
+        const lines = text.split("\n\n");
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const jsonData = JSON.parse(line.slice(6));
+            setGeneratedContent((prev) => prev + jsonData.content);
+          }
+        }
+      }
 
       // Generate audio
       const audioResponse = await fetch(`/api/elevenlabs/podcast`, {
@@ -82,7 +102,7 @@ const CreatePodcast = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content: contentData.content }),
+        body: JSON.stringify({ content: generatedContent }),
       });
       if (!audioResponse.ok) throw new Error("Failed to generate audio");
 
@@ -172,8 +192,14 @@ const CreatePodcast = () => {
         )}
       </Button>
       {error && <p className="text-red-500 mb-4">{error}</p>}
+      {isLoading && (
+        <Box className="mt-4">
+          <Typography variant="body1">Generating content:</Typography>
+          <Typography variant="body2">{generatedContent}</Typography>
+        </Box>
+      )}
       {audioUrl && (
-        <Box className="bg-primary p-4 rounded-md">
+        <Box className="bg-primary p-4 rounded-md mt-4">
           <Typography variant="h6" gutterBottom>
             Your Podcast is Ready!
           </Typography>

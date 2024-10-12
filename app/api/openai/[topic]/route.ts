@@ -22,27 +22,44 @@ export async function GET(
   const tone = searchParams.get("tone") || "comedy";
   const duration = searchParams.get("duration") || "5";
 
+  const encoder = new TextEncoder();
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
+
+  const writeToStream = async (text: string) => {
+    await writer.write(
+      encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`)
+    );
+  };
+
+  // Start the stream immediately
+  writeToStream("Generating content...");
+
   try {
     const response = await cohere.generate({
       model: "command",
-      prompt: `Create a ${duration}-minute ${tone} podcast monologue about ${topic}. Be concise and entertaining. and Only return the content, no other text.`,
+      prompt: `Generate a ${duration}-minute ${tone} podcast monologue about ${topic}. Be concise and entertaining.`,
       maxTokens: 500,
       temperature: 0.7,
     });
 
     if (response.generations && response.generations.length > 0) {
-      return NextResponse.json({ content: response.generations[0].text });
+      await writeToStream(response.generations[0].text);
     } else {
-      return NextResponse.json(
-        { error: "No content generated" },
-        { status: 500 }
-      );
+      await writeToStream("No content generated");
     }
   } catch (error) {
     console.error("Cohere API error:", error);
-    return NextResponse.json(
-      { error: "Failed to generate podcast content" },
-      { status: 500 }
-    );
+    await writeToStream("Failed to generate podcast content");
+  } finally {
+    writer.close();
   }
+
+  return new NextResponse(stream.readable, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 }
